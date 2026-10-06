@@ -125,12 +125,41 @@ test("customer pays the invoice online and sees it as paid", async ({ page }) =>
 
 test("customer can cancel an upcoming booking with a reason", async ({ page }) => {
   await login(page, USERS.customer);
-  await page.goto("/customer/bookings");
-  const upcoming = page.locator("tbody tr").filter({ hasText: /Pending|Confirmed/ }).first().getByRole("link").first();
-  await upcoming.click();
+  // Arrange: a fresh booking of our own via the API (the session's access token), so this
+  // test never depends on what other runs left behind.
+  const id = await page.evaluate(async () => {
+    const token = sessionStorage.getItem("vsc.access");
+    const api = async (path: string, init?: RequestInit) => {
+      const res = await fetch(`/api/v1${path}`, {
+        ...init, headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      });
+      return (await res.json()).data;
+    };
+    const vehicles = await api("/vehicles/");
+    const car = vehicles.find((v: { vehicle_type: string }) => v.vehicle_type === "CAR");
+    const offers = await api("/vendors/?service=car-wash&vehicle_type=CAR");
+    for (const offer of offers) {
+      const days = await api(`/availability/days/?vendor_service=${offer.offer_id}&days=14`);
+      for (const day of days.days.filter((d: { available_slots: number }) => d.available_slots > 0).reverse()) {
+        const slots = await api(`/availability/slots/?vendor_service=${offer.offer_id}&date=${day.date}`);
+        for (const slot of slots.slots.filter((x: { available: boolean }) => x.available).reverse()) {
+          const booking = await api("/bookings/", {
+            method: "POST",
+            body: JSON.stringify({ vendor_service: offer.offer_id, vehicle: car.id, start_datetime: slot.start }),
+          });
+          if (booking?.id) return booking.id as string;
+        }
+      }
+    }
+    return null;
+  });
+  expect(id, "could not create a booking to cancel").toBeTruthy();
+
+  await page.goto(`/customer/bookings/${id}`);
   await page.getByRole("button", { name: "Cancel booking" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel(/Reason/).fill("Plans changed (e2e)");
   await dialog.getByRole("button", { name: "Cancel booking" }).click();
   await expect(page.getByText(/Cancelled .*Plans changed \(e2e\)/)).toBeVisible();
+  if (isMobile(page)) await expectNoHorizontalOverflow(page);
 });
