@@ -20,7 +20,7 @@ def render_invoice_pdf(invoice):
     buf = BytesIO()
     org = invoice.organization
     doc = SimpleDocTemplate(buf, pagesize=A4, leftMargin=18 * mm, rightMargin=18 * mm, topMargin=16 * mm,
-                            bottomMargin=18 * mm, title=invoice.invoice_number, author="Vehicle Service CRM")
+                            bottomMargin=18 * mm, title=invoice.invoice_number, author="Glideinbir")
     styles = getSampleStyleSheet()
     small = ParagraphStyle("small", parent=styles["Normal"], fontSize=8.5, textColor=MUTED, leading=11)
     normal = ParagraphStyle("normal", parent=styles["Normal"], fontSize=9.5, leading=13)
@@ -77,7 +77,7 @@ def render_invoice_pdf(invoice):
     if invoice.notes:
         story += [Spacer(1, 5 * mm), Paragraph(f"<b>Notes:</b> {invoice.notes}", small)]
     story += [Spacer(1, 10 * mm),
-              Paragraph(f"Generated {timezone.localtime():%d %b %Y %H:%M} · Vehicle Service CRM · "
+              Paragraph(f"Generated {timezone.localtime():%d %b %Y %H:%M} · Glideinbir · "
                         "<b>Built by Sahil Thakur</b>", small)]
     doc.build(story)
     return buf.getvalue()

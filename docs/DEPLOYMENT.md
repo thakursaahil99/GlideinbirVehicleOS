@@ -1,6 +1,6 @@
 # Deployment
 
-> Multi-Vendor Vehicle Service CRM — **built by Sahil Thakur**
+> Glideinbir — Vehicle Operating System — **built by Sahil Thakur**
 
 ## Production stack (`docker-compose.prod.yml`)
 

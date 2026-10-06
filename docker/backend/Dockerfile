@@ -1,4 +1,4 @@
-# Vehicle Service CRM — backend image (built by Sahil Thakur)
+# Glideinbir — backend image (built by Sahil Thakur)
 FROM python:3.12-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \

@@ -1,4 +1,4 @@
-# Vehicle Service CRM — runtime dependencies (built by Sahil Thakur)
+# Glideinbir — runtime dependencies (built by Sahil Thakur)
 Django>=5.2,<5.3
 djangorestframework>=3.17.2,<3.18
 djangorestframework-simplejwt>=5.5,<6

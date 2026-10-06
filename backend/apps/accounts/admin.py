@@ -3,8 +3,8 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
 from .models import User
 
-admin.site.site_header = "Vehicle Service CRM — Built by Sahil Thakur"
-admin.site.site_title = "Vehicle Service CRM"
+admin.site.site_header = "Glideinbir — Built by Sahil Thakur"
+admin.site.site_title = "Glideinbir"
 
 
 @admin.register(User)

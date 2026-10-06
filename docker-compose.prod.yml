@@ -1,4 +1,4 @@
-# Vehicle Service CRM — production-style stack (built by Sahil Thakur)
+# Glideinbir — production-style stack (built by Sahil Thakur)
 # Usage: cp .env.example .env.prod  (fill in real secrets)  &&
 #        docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 # Put a TLS-terminating proxy (or cloud load balancer) in front of the `web` service.

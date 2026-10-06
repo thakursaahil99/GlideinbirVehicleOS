@@ -1,4 +1,4 @@
-# Vehicle Service CRM - start the whole app without Docker (built by Sahil Thakur)
+# Glideinbir - start the whole app without Docker (built by Sahil Thakur)
 # Opens three windows: Django API (:8000), the job scheduler, and the web app (:5173).
 # Usage:  .\scripts\start.ps1   [-BackendPort 8000] [-FrontendPort 5173] [-NoScheduler]
 param(

@@ -1,4 +1,4 @@
-# Vehicle Service CRM - one-time local setup without Docker (built by Sahil Thakur)
+# Glideinbir - one-time local setup without Docker (built by Sahil Thakur)
 # Usage (PowerShell, from the repo root):  .\scripts\setup.ps1          [-NoSeed] [-Fresh]
 param(
     [switch]$NoSeed,   # skip demo data

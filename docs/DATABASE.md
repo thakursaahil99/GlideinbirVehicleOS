@@ -1,6 +1,6 @@
 # Database
 
-> Multi-Vendor Vehicle Service CRM — **built by Sahil Thakur**
+> Glideinbir — Vehicle Operating System — **built by Sahil Thakur**
 
 PostgreSQL 16. All primary keys are UUIDs. All datetimes are timezone-aware (`USE_TZ=True`,
 default zone `Asia/Kolkata`, stored in UTC).

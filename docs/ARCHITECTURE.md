@@ -1,6 +1,6 @@
 # Architecture
 
-> Multi-Vendor Vehicle Service CRM — **built by Sahil Thakur**
+> Glideinbir — Vehicle Operating System — **built by Sahil Thakur**
 
 ## 1. System overview
 

@@ -1,4 +1,4 @@
-# Vehicle Service CRM — production web image (built by Sahil Thakur)
+# Glideinbir — production web image (built by Sahil Thakur)
 # Stage 1: build the SPA. Stage 2: serve it with nginx, which also proxies /api to Django.
 FROM node:22-alpine AS build
 WORKDIR /app

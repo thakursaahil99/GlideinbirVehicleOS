@@ -1,4 +1,4 @@
-# Vehicle Service CRM
+# Glideinbir — Vehicle Operating System
 
 **Multi-vendor, multi-tenant SaaS for vehicle service agencies — built by Sahil Thakur.**
 

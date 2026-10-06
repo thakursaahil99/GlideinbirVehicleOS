@@ -35,7 +35,7 @@ class EmailProvider(NotificationProvider):
     channel = "EMAIL"
 
     def send(self, notification):
-        body = f"{notification.body}\n\n— Vehicle Service CRM\nBuilt by Sahil Thakur"
+        body = f"{notification.body}\n\n— Glideinbir\nBuilt by Sahil Thakur"
         send_mail(notification.title, body, settings.DEFAULT_FROM_EMAIL, [notification.to_address])
         return DeliveryResult(ok=True, message_id=f"email-{uuid.uuid4().hex[:12]}")
 

@@ -1,7 +1,7 @@
 """
 Base settings shared by every environment.
 
-Vehicle Service CRM — built by Sahil Thakur.
+Glideinbir — built by Sahil Thakur.
 All secrets and environment-specific values come from environment variables.
 """
 from datetime import timedelta
@@ -25,7 +25,7 @@ SECRET_KEY = env("DJANGO_SECRET_KEY", default="")
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 
-PROJECT_NAME = "Vehicle Service CRM"
+PROJECT_NAME = "Glideinbir"
 PROJECT_AUTHOR = "Sahil Thakur"
 
 INSTALLED_APPS = [
@@ -234,9 +234,9 @@ SIMPLE_JWT = {
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Vehicle Service CRM API",
+    "TITLE": "Glideinbir API",
     "DESCRIPTION": (
-        "Multi-vendor vehicle service CRM — versioned REST API (/api/v1/). "
+        "Glideinbir Vehicle Operating System — versioned REST API (/api/v1/). "
         "Authenticate with `Authorization: Bearer <access token>`. "
         "Every response uses the envelope `{success, data}` or `{success, error}`. "
         "Built by Sahil Thakur."
@@ -289,7 +289,7 @@ TRUST_X_FORWARDED_FOR = env.bool("TRUST_X_FORWARDED_FOR", default=False)
 # Email (console backend in development)
 # --------------------------------------------------------------------------- #
 EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Vehicle Service CRM <no-reply@vehicle-crm.local>")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="Glideinbir <no-reply@glideinbir.local>")
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:5173")
 
 # --------------------------------------------------------------------------- #

@@ -1,6 +1,6 @@
 # Security
 
-> Multi-Vendor Vehicle Service CRM — **built by Sahil Thakur**
+> Glideinbir — Vehicle Operating System — **built by Sahil Thakur**
 
 ## Tenant isolation
 * Tenant resolved server-side from the user's single **active membership** (DB-enforced uniqueness).

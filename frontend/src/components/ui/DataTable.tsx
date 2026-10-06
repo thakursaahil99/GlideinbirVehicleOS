@@ -29,42 +29,82 @@ export function DataTable<T>({ columns, rows, rowKey, loading, emptyTitle = "Not
   if (loading && !rows) return <Skeleton />;
   if (!rows || rows.length === 0) return <EmptyState title={emptyTitle} description={emptyDescription} />;
 
+  // On phones each row becomes a card: first column is the title, header-less columns
+  // (row actions) form the footer, and the rest render as label/value pairs.
+  const isAction = (col: Column<T>) => col.header === "" || col.key === "actions";
+  const [titleCol, ...restCols] = columns;
+  const fieldCols = restCols.filter((col) => !isAction(col) && !col.hideOnMobile);
+  const actionCols = restCols.filter(isAction);
+
   return (
-    <div className="-mx-4 overflow-x-auto sm:-mx-5">
-      <table className="min-w-full divide-y divide-slate-200 text-sm">
-        <thead className="bg-slate-50/80">
-          <tr>
-            {columns.map((col) => (
-              <th
-                key={col.key}
-                scope="col"
-                className={cn(
-                  "px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 sm:px-5",
-                  col.hideOnMobile && "hidden md:table-cell",
-                  col.className,
-                )}
-              >
-                {col.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className={cn("stagger divide-y divide-slate-100 bg-white transition-opacity", loading && "opacity-60")}>
-          {rows.map((row) => (
-            <tr key={rowKey(row)} className="transition-colors duration-150 hover:bg-brand-50/40">
+    <>
+      <ul className={cn("stagger space-y-3 transition-opacity md:hidden", loading && "opacity-60")}>
+        {rows.map((row) => (
+          <li
+            key={rowKey(row)}
+            className="rounded-2xl bg-white p-4 shadow-[var(--shadow-soft)] ring-1 ring-slate-200/70 transition-transform duration-150 active:scale-[0.99]"
+          >
+            {titleCol && <div className="min-w-0 text-sm font-medium text-slate-900">{titleCol.render(row)}</div>}
+            {fieldCols.length > 0 && (
+              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 border-t border-slate-100 pt-3 text-sm">
+                {fieldCols.map((col) => (
+                  <div key={col.key} className="min-w-0">
+                    <dt className="text-[11px] font-medium uppercase tracking-wider text-slate-400">{col.header}</dt>
+                    <dd className="mt-0.5 min-w-0 break-words text-slate-700">{col.render(row)}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            {actionCols.length > 0 && (
+              // Hidden when every action cell rendered nothing (e.g. no actions on your own account).
+              <div className="mt-3 flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-3 [&_button]:min-h-9 [&:not(:has(*>*))]:hidden">
+                {actionCols.map((col) => (
+                  <div key={col.key} className="flex flex-wrap justify-end gap-2 empty:hidden">
+                    {col.render(row)}
+                  </div>
+                ))}
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+
+      <div className="-mx-4 hidden overflow-x-auto sm:-mx-5 md:block">
+        <table className="min-w-full divide-y divide-slate-200 text-sm">
+          <thead className="bg-slate-50/80">
+            <tr>
               {columns.map((col) => (
-                <td
+                <th
                   key={col.key}
-                  className={cn("px-4 py-3 align-middle text-slate-700 sm:px-5", col.hideOnMobile && "hidden md:table-cell", col.className)}
+                  scope="col"
+                  className={cn(
+                    "px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 sm:px-5",
+                    col.hideOnMobile && "hidden md:table-cell",
+                    col.className,
+                  )}
                 >
-                  {col.render(row)}
-                </td>
+                  {col.header}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody className={cn("stagger divide-y divide-slate-100 bg-white transition-opacity", loading && "opacity-60")}>
+            {rows.map((row) => (
+              <tr key={rowKey(row)} className="transition-colors duration-150 hover:bg-brand-50/40">
+                {columns.map((col) => (
+                  <td
+                    key={col.key}
+                    className={cn("px-4 py-3 align-middle text-slate-700 sm:px-5", col.hideOnMobile && "hidden md:table-cell", col.className)}
+                  >
+                    {col.render(row)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 

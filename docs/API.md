@@ -1,6 +1,6 @@
 # API
 
-> Multi-Vendor Vehicle Service CRM — **built by Sahil Thakur**
+> Glideinbir — Vehicle Operating System — **built by Sahil Thakur**
 
 * Base URL: `/api/v1/` · Swagger UI: **`/api/v1/docs/`** · schema: `/api/v1/schema/` (both off by default in production)
 * Auth: `Authorization: Bearer <access token>` (15-minute access, 7-day rotating refresh)

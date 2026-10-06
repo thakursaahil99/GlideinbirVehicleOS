@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Django management entry point — Vehicle Service CRM (built by Sahil Thakur)."""
+"""Django management entry point — Glideinbir (built by Sahil Thakur)."""
 import os
 import sys
 

@@ -14,7 +14,7 @@ from .tokens import email_verification_token, encode_uid, password_reset_token
 
 logger = logging.getLogger(__name__)
 
-SIGNATURE = "\n\n— Vehicle Service CRM\nBuilt by Sahil Thakur"
+SIGNATURE = "\n\n— Glideinbir\nBuilt by Sahil Thakur"
 
 
 def _get_active_user(user_id):
@@ -28,7 +28,7 @@ def send_password_reset_email(user_id):
         return
     link = f"{settings.FRONTEND_URL}/reset-password?uid={encode_uid(user)}&token={password_reset_token.make_token(user)}"
     send_mail(
-        subject="Reset your Vehicle Service CRM password",
+        subject="Reset your Glideinbir password",
         message=(
             f"Hi {user.full_name},\n\nUse the link below to set a new password. "
             f"It expires in {settings.PASSWORD_RESET_TIMEOUT // 3600} hours.\n\n{link}\n\n"
@@ -46,7 +46,7 @@ def send_verification_email(user_id):
         return
     link = f"{settings.FRONTEND_URL}/verify-email?uid={encode_uid(user)}&token={email_verification_token.make_token(user)}"
     send_mail(
-        subject="Verify your Vehicle Service CRM e-mail",
+        subject="Verify your Glideinbir e-mail",
         message=f"Hi {user.full_name},\n\nPlease confirm your e-mail address:\n\n{link}" + SIGNATURE,
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],
@@ -61,7 +61,7 @@ def send_staff_invite_email(user_id, organization_name):
         return
     link = f"{settings.FRONTEND_URL}/reset-password?uid={encode_uid(user)}&token={password_reset_token.make_token(user)}"
     send_mail(
-        subject=f"You've been invited to {organization_name} on Vehicle Service CRM",
+        subject=f"You've been invited to {organization_name} on Glideinbir",
         message=(
             f"Hi {user.full_name},\n\n{organization_name} has added you to their workshop team. "
             f"Set your password to get started:\n\n{link}\n\n"

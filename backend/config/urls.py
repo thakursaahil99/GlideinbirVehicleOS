@@ -1,4 +1,4 @@
-"""Root URLconf — Vehicle Service CRM, built by Sahil Thakur."""
+"""Root URLconf — Glideinbir, built by Sahil Thakur."""
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin

@@ -1,4 +1,4 @@
-# Vehicle Service CRM — local development stack (built by Sahil Thakur)
+# Glideinbir — local development stack (built by Sahil Thakur)
 # Usage: cp .env.example .env && docker compose up --build
 
 x-backend: &backend

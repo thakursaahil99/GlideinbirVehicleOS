@@ -5,7 +5,7 @@ from io import BytesIO, StringIO
 from django.http import HttpResponse
 from django.utils import timezone
 
-CREDIT = "Vehicle Service CRM — Built by Sahil Thakur"
+CREDIT = "Glideinbir — Built by Sahil Thakur"
 
 
 def _cell(value):
