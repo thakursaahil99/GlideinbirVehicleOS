@@ -1,0 +1,10 @@
+.env
+**/node_modules
+**/__pycache__
+**/.pytest_cache
+backend/media
+backend/test-media
+backend/staticfiles
+frontend/dist
+.git
+*.docx

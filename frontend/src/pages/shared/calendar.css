@@ -1,0 +1,52 @@
+/* FullCalendar theming to match the CRM design system (built by Sahil Thakur). */
+.crm-calendar .fc {
+  --fc-border-color: rgb(226 232 240);
+  --fc-button-bg-color: #ffffff;
+  --fc-button-text-color: #334155;
+  --fc-button-border-color: rgb(226 232 240);
+  --fc-button-hover-bg-color: #f8fafc;
+  --fc-button-hover-border-color: rgb(203 213 225);
+  --fc-button-active-bg-color: #5243e6;
+  --fc-button-active-border-color: #5243e6;
+  --fc-today-bg-color: rgb(238 240 255 / 0.6);
+  --fc-now-indicator-color: #14b8e0;
+  --fc-event-text-color: #ffffff;
+  font-size: 0.8125rem;
+}
+.crm-calendar .fc .fc-button {
+  border-radius: 0.75rem;
+  padding: 0.35rem 0.7rem;
+  font-weight: 500;
+  text-transform: none;
+  box-shadow: none;
+}
+.crm-calendar .fc .fc-button-primary:not(:disabled).fc-button-active {
+  color: #ffffff;
+}
+.crm-calendar .fc .fc-toolbar-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+.crm-calendar .fc-event {
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.crm-calendar .fc-event:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px -6px rgb(15 23 42 / 0.35);
+}
+.crm-calendar .fc-list-event-title,
+.crm-calendar .fc-list-event-time {
+  color: #0f172a;
+}
+@media (max-width: 640px) {
+  .crm-calendar .fc .fc-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .crm-calendar .fc .fc-toolbar-title {
+    font-size: 0.95rem;
+  }
+}
