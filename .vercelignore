@@ -1,0 +1,16 @@
+# Never upload local environments, databases, secrets or build artefacts.
+.env
+.env.*
+**/.venv
+**/node_modules
+**/__pycache__
+**/*.sqlite3*
+backend/media
+backend/test-media
+backend/staticfiles
+frontend/dist
+frontend/test-results
+frontend/e2e-report
+*.docx
+.git
+.claude

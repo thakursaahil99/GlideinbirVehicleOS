@@ -8,7 +8,11 @@ export const USERS = {
   customer: "customer01@demo.local",
 } as const;
 
-export async function login(page: Page, email: string, password = PASSWORD) {
+/** The live Super Admin has a private password (E2E_ADMIN_PASSWORD); demo accounts use PASSWORD. */
+const passwordFor = (email: string) =>
+  email === "superadmin@demo.local" && process.env.E2E_ADMIN_PASSWORD ? process.env.E2E_ADMIN_PASSWORD : PASSWORD;
+
+export async function login(page: Page, email: string, password = passwordFor(email)) {
   await page.goto("/login");
   await page.getByLabel("E-mail").fill(email);
   await page.getByLabel("Password").fill(password);

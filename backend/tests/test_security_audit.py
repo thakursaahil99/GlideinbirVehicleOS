@@ -18,7 +18,7 @@ from .conftest import at, next_weekday
 pytestmark = pytest.mark.django_db
 
 PUBLIC = {
-    "/api/v1/health/", "/api/v1/auth/register/", "/api/v1/auth/register-agency/", "/api/v1/auth/login/",
+    "/api/v1/health/", "/api/v1/internal/cron/reminders/", "/api/v1/auth/register/", "/api/v1/auth/register-agency/", "/api/v1/auth/login/",
     "/api/v1/auth/refresh/", "/api/v1/auth/password-reset/", "/api/v1/auth/password-reset/confirm/",
     "/api/v1/auth/verify-email/", "/api/v1/schema/", "/api/v1/docs/",
 }
@@ -156,3 +156,28 @@ def test_payment_endpoints_have_their_own_throttle(auth_client, customer, monkey
                                                    "method": "UPI"}).status_code for _ in range(3)]
     assert codes[:2] == [404, 404] and codes[2] == 429
     assert client.get("/api/v1/payments/").status_code == 200  # reads are not throttled by this scope
+
+
+def test_cron_endpoint_requires_the_secret(api_client, settings):
+    settings.CRON_SECRET = "s3cret-value"
+    url = "/api/v1/internal/cron/reminders/"
+    assert api_client.get(url).status_code == 403
+    assert api_client.get(url, HTTP_AUTHORIZATION="Bearer wrong").status_code == 403
+    res = api_client.get(url, HTTP_AUTHORIZATION="Bearer s3cret-value")
+    assert res.status_code == 200 and "reminders_sent" in res.json()["data"]
+    settings.CRON_SECRET = ""
+    assert api_client.get(url, HTTP_AUTHORIZATION="Bearer ").status_code == 403  # unset secret never opens it
+
+
+def test_invoice_pdf_regenerates_when_file_is_gone(auth_client, agency_a_world, shop):
+    from apps.invoices.models import Invoice
+
+    invoice = Invoice.objects.get(pk=agency_a_world["invoices"])
+    client = auth_client(shop.admin)
+    first = client.get(f"/api/v1/invoices/{invoice.id}/pdf/")
+    assert first.status_code == 200
+    b"".join(first.streaming_content)  # reading to the end releases the file (Windows locks open files)
+    invoice.refresh_from_db()
+    invoice.pdf.storage.delete(invoice.pdf.name)  # simulate a reset /tmp
+    res = client.get(f"/api/v1/invoices/{invoice.id}/pdf/")
+    assert res.status_code == 200 and b"".join(res.streaming_content).startswith(b"%PDF")

@@ -7,6 +7,8 @@ invoices for cars, bikes, scooters and EVs, while a Super Admin oversees the pla
 strictly isolated.
 
 > **Status: all 13 phases built** — see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#8-roadmap).
+>
+> **Live demo:** https://glideinbir-vos.vercel.app — demo logins below (password `Demo@12345`); the Super Admin password is private.
 
 ## What's inside
 

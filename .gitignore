@@ -40,3 +40,6 @@ backend/*.sqlite3-*
 # Playwright
 frontend/e2e-report/
 frontend/test-results/
+
+.vercel
+.env*

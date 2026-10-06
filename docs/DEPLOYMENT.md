@@ -2,7 +2,35 @@
 
 > Glideinbir — Vehicle Operating System — **built by Sahil Thakur**
 
-## Production stack (`docker-compose.prod.yml`)
+## Live on Vercel
+
+**https://glideinbir-vos.vercel.app** (Vercel project `glideinbir-vos`, team `sahilt`, region `sin1`).
+
+| Piece | How it runs on Vercel |
+|---|---|
+| Web app | `frontend/` built by Vite, served from the CDN (`vercel.json` → `outputDirectory`) |
+| API | Django as one Python function (`api/index.py`, settings `config.settings.vercel`), same domain — no CORS |
+| Database | Neon PostgreSQL `glideinbir-vos-db` (free plan, Singapore) via the Vercel integration → `DATABASE_URL`; the booking exclusion constraint is active |
+| Background tasks | inline (no Redis); reminders via **Vercel Cron** → `/api/v1/internal/cron/reminders/` (daily on Hobby), authorised by `CRON_SECRET` |
+| Static (admin, Swagger) | WhiteNoise straight from app directories |
+| Uploads / PDFs | `/tmp` (temporary — invoice PDFs re-render on demand). Set `USE_S3_STORAGE=True` + `S3_*` for permanent uploads |
+
+Secrets (`DJANGO_SECRET_KEY`, `JWT_SIGNING_KEY`, `CRON_SECRET`) are generated and stored as **sensitive** Vercel
+environment variables; nothing secret is in the repo.
+
+Redeploy: `vercel deploy --prod` from the repo root (or connect the GitHub repo with `vercel git connect` for
+automatic deploys on push). Schema changes: run migrations against Neon's unpooled URL from `vercel env pull`:
+
+```bash
+vercel env pull .env.local
+# then, with DATABASE_URL set to DATABASE_URL_UNPOOLED from .env.local:
+python backend/manage.py migrate
+```
+
+Verify the live site with the browser suite (read-only page sweep):
+`cd frontend && E2E_BASE_URL=https://glideinbir-vos.vercel.app E2E_ADMIN_PASSWORD=… npx playwright test e2e/pages.spec.ts`
+
+## Self-hosted production stack (`docker-compose.prod.yml`)
 
 ```mermaid
 flowchart LR

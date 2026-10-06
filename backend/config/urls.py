@@ -16,7 +16,7 @@ from apps.job_cards.views import JobCardViewSet
 from apps.notifications.views import NotificationViewSet
 from apps.payments.views import PaymentViewSet
 from apps.reports.views import DashboardView, ReportListView, ReportView, SearchView
-from apps.core.views import HealthView
+from apps.core.views import CronRemindersView, HealthView
 from apps.customers.views import CustomerViewSet
 from apps.organizations.views import OrganizationViewSet
 from apps.vendors.urls import agency_urlpatterns
@@ -42,6 +42,7 @@ router.register("notifications", NotificationViewSet, basename="notification")
 
 api_v1 = [
     path("health/", HealthView.as_view(), name="health"),
+    path("internal/cron/reminders/", CronRemindersView.as_view(), name="cron-reminders"),
     path("auth/", include("apps.accounts.urls")),
     path("agency/", include(agency_urlpatterns)),
     path("availability/slots/", SlotsView.as_view(), name="availability-slots"),
@@ -66,6 +67,12 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+elif getattr(settings, "SERVE_MEDIA", False):
+    # Hosts without object storage (e.g. Vercel /tmp): Django serves uploads itself.
+    from django.urls import re_path
+    from django.views.static import serve
+
+    urlpatterns += [re_path(r"^media/(?P<path>.+)$", serve, {"document_root": settings.MEDIA_ROOT})]
 
 handler404 = "apps.core.views.json_404"
 handler500 = "apps.core.views.json_500"

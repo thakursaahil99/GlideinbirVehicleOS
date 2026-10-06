@@ -17,11 +17,13 @@ const python = existsSync(join(backendDir, ".venv/Scripts/python.exe"))
   : join(backendDir, ".venv/bin/python");
 const API_PORT = 8030;
 const WEB_PORT = 5199;
+/** Point at a deployed site instead of local servers, e.g. E2E_BASE_URL=https://glideinbir-vos.vercel.app */
+const LIVE_URL = process.env.E2E_BASE_URL;
 
 // Fresh database once per run. Playwright re-evaluates this file in every worker process,
 // so the reset is guarded by an env flag the workers inherit (otherwise they'd delete the
 // database the already-running test server is using).
-if (!process.env.PW_REUSE && !process.env.E2E_DB_RESET_DONE) {
+if (!LIVE_URL && !process.env.PW_REUSE && !process.env.E2E_DB_RESET_DONE) {
   for (const suffix of ["", "-wal", "-shm"]) rmSync(join(backendDir, `e2e.sqlite3${suffix}`), { force: true });
   process.env.E2E_DB_RESET_DONE = "1";
 }
@@ -49,7 +51,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: [["list"], ["html", { open: "never", outputFolder: "e2e-report" }]],
   use: {
-    baseURL: `http://localhost:${WEB_PORT}`,
+    baseURL: LIVE_URL ?? `http://localhost:${WEB_PORT}`,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     timezoneId: "Asia/Kolkata",
@@ -59,7 +61,7 @@ export default defineConfig({
     { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } } },
     { name: "mobile", use: { ...devices["Pixel 7"] } },
   ],
-  webServer: [
+  webServer: LIVE_URL ? undefined : [
     {
       command: `${py} manage.py migrate --noinput -v0 && ${py} manage.py seed_demo_data && ${py} manage.py runserver 127.0.0.1:${API_PORT} --noreload`,
       cwd: backendDir,

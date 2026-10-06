@@ -147,7 +147,8 @@ class InvoiceViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.
         invoice = self.get_object()
         if invoice.status == InvoiceStatus.VOID:
             raise NotFound("Void invoices have no PDF.")
-        if not invoice.pdf:
+        # Re-render when missing — also covers ephemeral disks (serverless /tmp resets).
+        if not invoice.pdf or not invoice.pdf.storage.exists(invoice.pdf.name):
             invoice = InvoiceService.render_pdf(invoice)
         return FileResponse(invoice.pdf.open("rb"), content_type="application/pdf", as_attachment=True,
                             filename=f"{invoice.invoice_number}.pdf")

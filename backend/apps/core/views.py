@@ -48,6 +48,32 @@ class HealthView(APIView):
         )
 
 
+class CronRemindersView(APIView):
+    """
+    Scheduled jobs for hosts without Celery Beat (Vercel Cron). Vercel calls it with
+    ``Authorization: Bearer $CRON_SECRET``; anything else is refused.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    throttle_classes = []
+
+    @extend_schema(tags=["system"], summary="Run scheduled jobs (cron only)", responses={200: OpenApiTypes.OBJECT})
+    def get(self, request):
+        import hmac
+
+        from apps.accounts.tasks import cleanup_expired_tokens
+        from apps.notifications.tasks import send_booking_reminder
+
+        secret = getattr(settings, "CRON_SECRET", "")
+        supplied = request.META.get("HTTP_AUTHORIZATION", "").removeprefix("Bearer ").strip()
+        if not secret or not hmac.compare_digest(secret, supplied):
+            return Response(error_payload("PERMISSION_DENIED", "Cron secret required."), status=403)
+        sent = send_booking_reminder(hours_ahead=26)  # daily cron → cover the next day plus margin
+        cleanup_expired_tokens()
+        return Response({"reminders_sent": sent})
+
+
 def json_404(request, exception=None):
     return JsonResponse(error_payload("NOT_FOUND", "The requested resource was not found."), status=404)
 

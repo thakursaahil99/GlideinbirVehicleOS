@@ -1,0 +1,16 @@
+# Vercel Python function deps - keep in sync with backend/requirements/base.txt (Glideinbir, built by Sahil Thakur)
+Django>=5.2,<5.3
+djangorestframework>=3.17.2,<3.18
+djangorestframework-simplejwt>=5.5,<6
+django-filter>=25.1,<26
+drf-spectacular>=0.28,<0.30
+django-cors-headers>=4.7,<5
+django-environ>=0.12,<0.13
+psycopg[binary]>=3.2,<3.3
+argon2-cffi>=23.1
+Pillow>=12.3,<13
+celery[redis]>=5.5,<5.6
+redis>=5.2,<7
+whitenoise>=6.9,<7
+reportlab>=4.2,<6
+openpyxl>=3.1,<4
