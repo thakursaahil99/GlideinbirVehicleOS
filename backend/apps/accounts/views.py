@@ -171,6 +171,15 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.Gen
     def get_queryset(self):
         return User.objects.prefetch_related("memberships__organization")
 
+    @extend_schema(tags=["users"], summary="Create a user of any role (Super Admin)",
+                   request=s.AdminUserCreateSerializer, responses={201: s.AdminUserSerializer})
+    def create(self, request):
+        serializer = s.AdminUserCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = UserService.create_user(actor=request.user, request=request, **serializer.validated_data)
+        return Response(self.get_serializer(self.get_queryset().get(pk=user.pk)).data,
+                        status=status.HTTP_201_CREATED)
+
     @extend_schema(tags=["users"], summary="Activate a user", request=None, responses={200: s.AdminUserSerializer})
     @action(detail=True, methods=["post"])
     def activate(self, request, pk=None):

@@ -17,7 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { StaffMember } from "@/types/api";
 import { ROLE_LABELS, formatDateTime } from "@/utils/format";
 
-const EMPTY: StaffInput = { email: "", full_name: "", phone: "", role: "AGENCY_STAFF", permissions: [] };
+const EMPTY: StaffInput = { email: "", full_name: "", phone: "", role: "AGENCY_STAFF", permissions: [], password: "" };
 
 function StaffEditor({ member, open, onClose }: { member: StaffMember | null; open: boolean; onClose: () => void }) {
   const isNew = member === null;
@@ -43,7 +43,7 @@ function StaffEditor({ member, open, onClose }: { member: StaffMember | null; op
       return staffApi.update(member.id, { full_name: form.full_name, phone: form.phone, role: form.role, permissions: form.permissions });
     },
     onSuccess: (m) => {
-      toast.show(isNew ? `Invitation sent to ${m.email}.` : "Staff member updated.", "success");
+      toast.show(isNew ? (form.password ? `${m.email} can now sign in.` : `Invitation sent to ${m.email}.`) : "Staff member updated.", "success");
       queryClient.invalidateQueries({ queryKey: ["staff"] });
       onClose();
     },
@@ -66,17 +66,22 @@ function StaffEditor({ member, open, onClose }: { member: StaffMember | null; op
       footer={
         <>
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button loading={save.isPending} onClick={() => save.mutate()}>{isNew ? "Send invite" : "Save"}</Button>
+          <Button loading={save.isPending} onClick={() => save.mutate()}>{isNew ? (form.password ? "Create member" : "Send invite") : "Save"}</Button>
         </>
       }
     >
       <div className="space-y-4">
         {isNew && (
           <Input label="E-mail" type="email" value={form.email} error={errors.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })} hint="They'll receive a link to set their password." />
+            onChange={(e) => setForm({ ...form, email: e.target.value })} />
         )}
         <Input label="Full name" value={form.full_name} error={errors.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} />
         <Input label="Phone" type="tel" value={form.phone} error={errors.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+        {isNew && (
+          <Input label="Password (optional)" type="password" autoComplete="new-password" value={form.password} error={errors.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            hint="Set it now and share it with them, or leave blank to e-mail them a link to set their own." />
+        )}
         <Select label="Role" value={form.role} error={errors.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
           <option value="AGENCY_MANAGER">Manager</option>
           <option value="AGENCY_STAFF">Staff</option>

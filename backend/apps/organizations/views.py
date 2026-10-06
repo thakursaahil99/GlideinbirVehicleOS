@@ -15,6 +15,7 @@ from apps.core.permissions import IsAgencyAdmin, IsAgencyManager, IsAgencyUser, 
 from .filters import OrganizationFilter
 from .models import Membership, Organization
 from .serializers import (
+    AdminAgencyCreateSerializer,
     AgencyRegistrationResponseSerializer,
     AgencyRegistrationSerializer,
     MembershipSerializer,
@@ -73,7 +74,7 @@ class OrganizationViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixi
     object_organization_attr = "pk"  # for IsSameOrganization: the object IS the organization
 
     def get_permissions(self):
-        if self.action in ("approve", "reject", "suspend", "reactivate", "deactivate"):
+        if self.action in ("create", "approve", "reject", "suspend", "reactivate", "deactivate"):
             classes = [IsSuperAdmin]
         elif self.action == "partial_update":
             classes = [IsSuperAdmin | (IsAgencyAdmin & IsSameOrganization)]
@@ -88,6 +89,17 @@ class OrganizationViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixi
         return Organization.objects.for_user(self.request.user).annotate(
             member_count=Count("memberships", filter=Q(memberships__is_active=True))
         ).order_by("name", "id")
+
+    @extend_schema(tags=["organizations"], summary="Create an ACTIVE agency with its first Agency Admin (Super Admin)",
+                   request=AdminAgencyCreateSerializer, responses={201: OrganizationSerializer})
+    def create(self, request):
+        serializer = AdminAgencyCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        org_data, admin_data = serializer.split()
+        org = OrganizationService.create_agency(organization_data=org_data, admin_data=admin_data,
+                                                actor=request.user, request=request)
+        return Response(OrganizationSerializer(self.get_queryset().get(pk=org.pk)).data,
+                        status=status.HTTP_201_CREATED)
 
     def perform_update(self, serializer):
         OrganizationService.update_profile(organization=serializer.instance, data=serializer.validated_data,

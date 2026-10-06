@@ -8,7 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.core.tenancy import get_user_membership
 
-from .constants import Role, StaffPermission
+from .constants import AGENCY_ROLES, Role, StaffPermission
 from .models import User
 
 
@@ -63,6 +63,47 @@ class UserSerializer(serializers.ModelSerializer):
 
 class AdminUserSerializer(UserSerializer):
     """Used by Super Admin listings — no extra secrets, just the same shape."""
+
+
+class AdminUserCreateSerializer(serializers.Serializer):
+    """Super Admin creates any account; agency roles need the agency they belong to."""
+
+    email = serializers.EmailField(max_length=254)
+    full_name = serializers.CharField(max_length=150)
+    phone = serializers.RegexField(r"^\+?[0-9]{7,15}$", required=False, allow_blank=True, max_length=16, default="")
+    role = serializers.ChoiceField(choices=Role.choices)
+    organization = serializers.UUIDField(required=False, allow_null=True, default=None)
+    permissions = serializers.ListField(child=serializers.ChoiceField(choices=StaffPermission.choices),
+                                        required=False, allow_empty=True)
+    # Blank = e-mail a link to set the password instead.
+    password = serializers.CharField(write_only=True, trim_whitespace=False, max_length=128, required=False,
+                                     allow_blank=True, default="")
+
+    def validate_email(self, value):
+        value = value.strip().lower()
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("An account with this e-mail already exists.")
+        return value
+
+    def validate(self, attrs):
+        from apps.organizations.models import Organization
+
+        if attrs["role"] in AGENCY_ROLES:
+            if not attrs.get("organization"):
+                raise serializers.ValidationError({"organization": ["Choose the agency this user belongs to."]})
+            org = Organization.objects.filter(pk=attrs["organization"]).first()
+            if org is None:
+                raise serializers.ValidationError({"organization": ["Agency not found."]})
+            attrs["organization"] = org
+        else:
+            attrs["organization"] = None
+            attrs.pop("permissions", None)
+        if attrs.get("password"):
+            try:
+                validate_new_password(attrs["password"], User(email=attrs["email"], full_name=attrs["full_name"]))
+            except serializers.ValidationError as exc:
+                raise serializers.ValidationError({"password": exc.detail}) from exc
+        return attrs
 
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):

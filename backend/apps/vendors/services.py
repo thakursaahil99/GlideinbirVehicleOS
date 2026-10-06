@@ -46,7 +46,9 @@ def _ensure_can_manage(actor, target_user=None, role=None):
 class StaffService:
     @staticmethod
     @transaction.atomic
-    def add_member(*, organization, actor, email, full_name, role, phone="", permissions=None, request=None):
+    def add_member(*, organization, actor, email, full_name, role, phone="", permissions=None, password=None,
+                   request=None):
+        """Create an agency member. With ``password`` the account is ready to use; otherwise an invite is e-mailed."""
         if role not in MANAGEABLE_ROLES | {Role.AGENCY_ADMIN}:
             raise BusinessRuleViolation("Role must be an agency role.", code="INVALID_ROLE")
         _ensure_can_manage(actor, role=role)
@@ -59,14 +61,16 @@ class StaffService:
             permissions = DEFAULT_MANAGER_PERMISSIONS if role == Role.AGENCY_MANAGER else DEFAULT_STAFF_PERMISSIONS
         permissions = [] if role == Role.AGENCY_ADMIN else _clean_permissions(permissions)
 
-        user = User.objects.create_user(email=email, password=None, full_name=full_name, phone=phone, role=role)
+        user = User.objects.create_user(email=email, password=password or None, full_name=full_name, phone=phone,
+                                        role=role, email_verified=bool(password))
         membership = Membership.objects.create(user=user, organization=organization, permissions=permissions,
                                                created_by=actor)
         AuditService.log(AuditAction.USER_CREATED, user=actor, organization=organization, instance=user,
                          request=request, new_data={"email": email, "role": role, "permissions": permissions})
-        transaction.on_commit(
-            lambda: account_tasks.send_staff_invite_email.delay(str(user.pk), organization.name)
-        )
+        if not password:
+            transaction.on_commit(
+                lambda: account_tasks.send_staff_invite_email.delay(str(user.pk), organization.name)
+            )
         return membership
 
     @staticmethod

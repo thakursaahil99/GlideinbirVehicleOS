@@ -83,6 +83,16 @@ class AgencyRegistrationSerializer(serializers.Serializer):
         return data, admin
 
 
+class AdminAgencyCreateSerializer(AgencyRegistrationSerializer):
+    """Super Admin onboarding: same fields, but the admin password is optional (blank = e-mail an invite)."""
+
+    admin_password = serializers.CharField(write_only=True, trim_whitespace=False, max_length=128, required=False,
+                                           allow_blank=True, default="")
+
+    def validate(self, attrs):
+        return super().validate(attrs) if attrs.get("admin_password") else attrs
+
+
 class AgencyRegistrationResponseSerializer(serializers.Serializer):
     organization = OrganizationSerializer()
     user = UserSerializer()

@@ -1,4 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { UserPlus } from "lucide-react";
 import { useState } from "react";
 
 import { ApiError } from "@/api/client";
@@ -15,12 +16,15 @@ import { useAuth } from "@/hooks/useAuth";
 import type { Role, User } from "@/types/api";
 import { ROLE_LABELS, formatDateTime } from "@/utils/format";
 
+import { CreateUserModal } from "./CreateUserModal";
+
 export function AdminUsersPage() {
   const { user: me } = useAuth();
   const [role, setRole] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [target, setTarget] = useState<User | null>(null);
+  const [creating, setCreating] = useState(false);
   const toast = useToast();
   const queryClient = useQueryClient();
 
@@ -42,7 +46,11 @@ export function AdminUsersPage() {
 
   return (
     <>
-      <PageHeader title="Users" description="Every account on the platform. Deactivating a user revokes their sessions." />
+      <PageHeader
+        title="Users"
+        description="Every account on the platform. Deactivating a user revokes their sessions."
+        actions={<Button onClick={() => setCreating(true)}><UserPlus className="h-4 w-4" /> New user</Button>}
+      />
       <Card>
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <SearchBar value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search name, e-mail, phone…" />
@@ -87,6 +95,7 @@ export function AdminUsersPage() {
         />
         <Pagination meta={query.data?.pagination} onPageChange={setPage} />
       </Card>
+      <CreateUserModal open={creating} onClose={() => setCreating(false)} />
       <ConfirmDialog
         open={Boolean(target)}
         title={target?.is_active ? "Deactivate user?" : "Activate user?"}

@@ -76,6 +76,27 @@ class OrganizationService:
 
     @staticmethod
     @transaction.atomic
+    def create_agency(*, organization_data, admin_data, actor, request=None):
+        """Super Admin onboards an agency directly: it is ACTIVE and VERIFIED straight away."""
+        from apps.vendors.services import StaffService
+
+        org = Organization.objects.create(
+            **organization_data,
+            slug=unique_slug(organization_data["name"]),
+            status=OrganizationStatus.ACTIVE,
+            verification_status=VerificationStatus.VERIFIED,
+            status_changed_at=timezone.now(),
+        )
+        AuditService.log(AuditAction.AGENCY_REGISTERED, user=actor, organization=org, instance=org,
+                         request=request, new_data=snapshot(org, fields=["name", "email", "city", "status"]))
+        StaffService.add_member(organization=org, actor=actor, email=admin_data["email"],
+                                full_name=admin_data["full_name"], phone=admin_data.get("phone", ""),
+                                role=Role.AGENCY_ADMIN, password=admin_data.get("password") or None,
+                                request=request)
+        return org
+
+    @staticmethod
+    @transaction.atomic
     def change_status(*, organization, action, actor, reason="", request=None):
         if action not in STATUS_TRANSITIONS:
             raise BusinessRuleViolation(f"Unknown status action '{action}'.")

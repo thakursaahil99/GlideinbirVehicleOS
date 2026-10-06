@@ -13,7 +13,7 @@ from apps.core.exceptions import AppError, BusinessRuleViolation, InvalidCredent
 from apps.core.tenancy import get_user_membership, get_user_organization
 
 from . import tasks
-from .constants import Role
+from .constants import AGENCY_ROLES, Role
 from .models import User
 from .tokens import decode_uid, email_verification_token, password_reset_token
 
@@ -141,6 +141,40 @@ class AuthService:
 
 
 class UserService:
+    @staticmethod
+    @transaction.atomic
+    def create_user(*, actor, email, full_name, role, phone="", password=None, organization=None,
+                    permissions=None, request=None):
+        """
+        Super Admin creates any account. Agency roles join ``organization`` (via StaffService);
+        customers get their Customer profile. Without a password an invite / reset link is e-mailed.
+        """
+        if role in AGENCY_ROLES:
+            if organization is None:
+                raise BusinessRuleViolation("Choose the agency this user belongs to.", code="ORGANIZATION_REQUIRED")
+            from apps.vendors.services import StaffService
+
+            return StaffService.add_member(organization=organization, actor=actor, email=email,
+                                           full_name=full_name, role=role, phone=phone, permissions=permissions,
+                                           password=password, request=request).user
+
+        email = email.strip().lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise BusinessRuleViolation("An account with this e-mail already exists.", code="EMAIL_TAKEN")
+        extra = {"full_name": full_name, "phone": phone, "email_verified": bool(password)}
+        if role == Role.SUPER_ADMIN:
+            user = User.objects.create_superuser(email=email, password=password or None, **extra)
+        else:
+            user = User.objects.create_user(email=email, password=password or None, role=Role.CUSTOMER, **extra)
+            from apps.customers.services import CustomerService
+
+            CustomerService.ensure_profile(user)
+        AuditService.log(AuditAction.USER_CREATED, user=actor, instance=user, request=request,
+                         new_data={"email": email, "role": user.role})
+        if not password:
+            transaction.on_commit(lambda: tasks.send_password_reset_email.delay(str(user.pk)))
+        return user
+
     @staticmethod
     @transaction.atomic
     def set_active(*, target, active, actor, request=None):

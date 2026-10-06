@@ -12,6 +12,8 @@ export interface StaffInput {
   phone?: string;
   role?: string;
   permissions?: string[];
+  /** New members only: set the first password now (blank = e-mail an invite link). */
+  password?: string;
 }
 
 export const staffApi = {

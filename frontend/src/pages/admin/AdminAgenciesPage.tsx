@@ -1,4 +1,5 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Building2, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "react-router";
 
@@ -15,6 +16,9 @@ import { useToast } from "@/components/ui/toast-context";
 import type { Organization, OrganizationStatus, StatusAction } from "@/types/api";
 import { formatDate } from "@/utils/format";
 
+import { CreateAgencyModal } from "./CreateAgencyModal";
+import { CreateUserModal } from "./CreateUserModal";
+
 const ACTIONS: Record<StatusAction, { label: string; tone: "primary" | "danger" | "success"; from: OrganizationStatus[]; reason: boolean }> = {
   approve: { label: "Approve", tone: "success", from: ["PENDING", "REJECTED"], reason: false },
   reject: { label: "Reject", tone: "danger", from: ["PENDING"], reason: true },
@@ -30,6 +34,8 @@ export function AdminAgenciesPage() {
   const status = params.get("status") ?? "";
   const search = params.get("search") ?? "";
   const page = Number(params.get("page") ?? 1);
+  const [creating, setCreating] = useState(false);
+  const [addingTo, setAddingTo] = useState<string | undefined>(undefined);
   const [pendingAction, setPendingAction] = useState<{ org: Organization; action: StatusAction } | null>(null);
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -61,7 +67,11 @@ export function AdminAgenciesPage() {
 
   return (
     <>
-      <PageHeader title="Agencies" description="Approve, reject, suspend and reactivate agencies on the platform." />
+      <PageHeader
+        title="Agencies"
+        description="Create, approve, suspend and reactivate agencies on the platform."
+        actions={<Button onClick={() => setCreating(true)}><Building2 className="h-4 w-4" /> New agency</Button>}
+      />
       <Card>
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <SearchBar value={search} onChange={(v) => setParam("search", v)} placeholder="Search name, e-mail, phone, GSTIN…" />
@@ -109,6 +119,9 @@ export function AdminAgenciesPage() {
               className: "text-right",
               render: (o) => (
                 <div className="flex flex-wrap justify-end gap-1.5">
+                  <Button size="sm" variant="secondary" onClick={() => setAddingTo(o.id)} aria-label={`Add user to ${o.name}`}>
+                    <UserPlus className="h-3.5 w-3.5" /> Add user
+                  </Button>
                   {(Object.keys(ACTIONS) as StatusAction[])
                     .filter((a) => ACTIONS[a].from.includes(o.status))
                     .map((a) => (
@@ -124,6 +137,8 @@ export function AdminAgenciesPage() {
         <Pagination meta={query.data?.pagination} onPageChange={(p) => setParam("page", String(p))} />
       </Card>
 
+      <CreateAgencyModal open={creating} onClose={() => setCreating(false)} />
+      <CreateUserModal open={Boolean(addingTo)} defaultOrganization={addingTo} onClose={() => setAddingTo(undefined)} />
       <ConfirmDialog
         open={Boolean(pendingAction)}
         title={pendingAction ? `${ACTIONS[pendingAction.action].label} ${pendingAction.org.name}?` : ""}

@@ -1,6 +1,8 @@
 from rest_framework import serializers
 
 from apps.accounts.constants import Role, StaffPermission
+from apps.accounts.models import User
+from apps.accounts.serializers import validate_new_password
 from apps.organizations.models import Membership, Organization
 
 from .models import AgencySettings, Holiday, ResourceType, ServiceResource, SpecialWorkingDay, WorkingHours
@@ -31,6 +33,18 @@ class StaffCreateSerializer(serializers.Serializer):
     role = serializers.ChoiceField(choices=[Role.AGENCY_MANAGER, Role.AGENCY_STAFF, Role.AGENCY_ADMIN])
     permissions = serializers.ListField(child=serializers.ChoiceField(choices=StaffPermission.choices),
                                         required=False, allow_empty=True)
+    # Optional: set the first password now; leave blank to e-mail an invite link instead.
+    password = serializers.CharField(write_only=True, trim_whitespace=False, max_length=128, required=False,
+                                     allow_blank=True, default="")
+
+    def validate(self, attrs):
+        if attrs.get("password"):
+            candidate = User(email=attrs["email"], full_name=attrs["full_name"])
+            try:
+                validate_new_password(attrs["password"], candidate)
+            except serializers.ValidationError as exc:
+                raise serializers.ValidationError({"password": exc.detail}) from exc
+        return attrs
 
 
 class StaffUpdateSerializer(serializers.Serializer):
