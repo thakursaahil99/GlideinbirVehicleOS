@@ -18,6 +18,7 @@ import { formatDate } from "@/utils/format";
 
 import { CreateAgencyModal } from "./CreateAgencyModal";
 import { CreateUserModal } from "./CreateUserModal";
+import { EditAgencyModal } from "./EditModals";
 
 const ACTIONS: Record<StatusAction, { label: string; tone: "primary" | "danger" | "success"; from: OrganizationStatus[]; reason: boolean }> = {
   approve: { label: "Approve", tone: "success", from: ["PENDING", "REJECTED"], reason: false },
@@ -35,6 +36,7 @@ export function AdminAgenciesPage() {
   const search = params.get("search") ?? "";
   const page = Number(params.get("page") ?? 1);
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<Organization | null>(null);
   const [addingTo, setAddingTo] = useState<string | undefined>(undefined);
   const [pendingAction, setPendingAction] = useState<{ org: Organization; action: StatusAction } | null>(null);
   const toast = useToast();
@@ -119,6 +121,7 @@ export function AdminAgenciesPage() {
               className: "text-right",
               render: (o) => (
                 <div className="flex flex-wrap justify-end gap-1.5">
+                  <Button size="sm" variant="secondary" onClick={() => setEditing(o)}>Edit</Button>
                   <Button size="sm" variant="secondary" onClick={() => setAddingTo(o.id)} aria-label={`Add user to ${o.name}`}>
                     <UserPlus className="h-3.5 w-3.5" /> Add user
                   </Button>
@@ -138,6 +141,7 @@ export function AdminAgenciesPage() {
       </Card>
 
       <CreateAgencyModal open={creating} onClose={() => setCreating(false)} />
+      <EditAgencyModal org={editing} onClose={() => setEditing(null)} />
       <CreateUserModal open={Boolean(addingTo)} defaultOrganization={addingTo} onClose={() => setAddingTo(undefined)} />
       <ConfirmDialog
         open={Boolean(pendingAction)}

@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, ArrowDownUp, History, Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ApiError } from "@/api/client";
 import { inventoryApi } from "@/api/operations";
@@ -19,20 +19,27 @@ import { formatDateTime, inr, titleCase } from "@/utils/format";
 
 const UNITS = ["PCS", "LITRE", "KG", "SET", "METRE"];
 
-function PartModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+function PartModal({ open, part, onClose }: { open: boolean; part?: Part | null; onClose: () => void }) {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [form, setForm] = useState({ name: "", sku: "", brand: "", purchase_price: "", selling_price: "", minimum_stock: "0", unit: "PCS" });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (!open) return;
+    setErrors({});
+    setForm(part
+      ? { name: part.name, sku: part.sku ?? "", brand: part.brand ?? "", purchase_price: String(part.purchase_price ?? ""), selling_price: String(part.selling_price ?? ""), minimum_stock: String(part.minimum_stock ?? "0"), unit: part.unit ?? "PCS" }
+      : { name: "", sku: "", brand: "", purchase_price: "", selling_price: "", minimum_stock: "0", unit: "PCS" });
+  }, [open, part]);
   const save = useMutation({
-    mutationFn: () => inventoryApi.create(form),
-    onSuccess: () => { toast.show("Part added. Record a purchase to add stock.", "success"); queryClient.invalidateQueries({ queryKey: ["parts"] }); onClose(); },
+    mutationFn: () => (part ? inventoryApi.update(part.id, form) : inventoryApi.create(form)),
+    onSuccess: () => { toast.show(part ? "Part updated." : "Part added. Record a purchase to add stock.", "success"); queryClient.invalidateQueries({ queryKey: ["parts"] }); onClose(); },
     onError: (err) => err instanceof ApiError && (setErrors(err.fieldErrors()), toast.show(err.message, "error")),
   });
   const bind = (k: keyof typeof form) => ({ value: form[k], error: errors[k], onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm({ ...form, [k]: e.target.value }) });
   return (
-    <Modal open={open} onClose={onClose} title="New part"
-      footer={<><Button variant="secondary" onClick={onClose}>Cancel</Button><Button loading={save.isPending} onClick={() => save.mutate()}>Add part</Button></>}>
+    <Modal open={open} onClose={onClose} title={part ? `Edit ${part.name}` : "New part"}
+      footer={<><Button variant="secondary" onClick={onClose}>Cancel</Button><Button loading={save.isPending} onClick={() => save.mutate()}>{part ? "Save changes" : "Add part"}</Button></>}>
       <div className="grid gap-3 sm:grid-cols-2">
         <Input label="Name" {...bind("name")} wrapperClassName="sm:col-span-2" />
         <Input label="SKU" {...bind("sku")} />
@@ -112,6 +119,7 @@ export function InventoryPage() {
   const [page, setPage] = useState(1);
   const [adding, setAdding] = useState(false);
   const [moving, setMoving] = useState<Part | null>(null);
+  const [editingPart, setEditingPart] = useState<Part | null>(null);
   const [ledger, setLedger] = useState<Part | null>(null);
 
   const query = useQuery({
@@ -149,6 +157,7 @@ export function InventoryPage() {
               key: "actions", header: "", className: "text-right",
               render: (p) => (
                 <div className="flex justify-end gap-1.5">
+                  {canManage && <Button size="sm" variant="secondary" onClick={() => setEditingPart(p)}>Edit</Button>}
                   {canManage && <Button size="sm" variant="secondary" onClick={() => setMoving(p)}>Stock</Button>}
                   <Button size="sm" variant="ghost" aria-label="Ledger" onClick={() => setLedger(p)}><History className="h-4 w-4" /></Button>
                 </div>
@@ -159,6 +168,7 @@ export function InventoryPage() {
         <Pagination meta={query.data?.pagination} onPageChange={setPage} />
       </Card>
       <PartModal open={adding} onClose={() => setAdding(false)} />
+      <PartModal open={Boolean(editingPart)} part={editingPart} onClose={() => setEditingPart(null)} />
       <MoveModal part={moving} onClose={() => setMoving(null)} />
       <LedgerModal part={ledger} onClose={() => setLedger(null)} />
     </>

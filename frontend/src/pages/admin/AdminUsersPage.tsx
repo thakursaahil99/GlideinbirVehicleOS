@@ -17,6 +17,7 @@ import type { Role, User } from "@/types/api";
 import { ROLE_LABELS, formatDateTime } from "@/utils/format";
 
 import { CreateUserModal } from "./CreateUserModal";
+import { EditUserModal } from "./EditModals";
 
 export function AdminUsersPage() {
   const { user: me } = useAuth();
@@ -25,6 +26,7 @@ export function AdminUsersPage() {
   const [page, setPage] = useState(1);
   const [target, setTarget] = useState<User | null>(null);
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<User | null>(null);
   const toast = useToast();
   const queryClient = useQueryClient();
 
@@ -84,18 +86,23 @@ export function AdminUsersPage() {
               key: "actions",
               header: "",
               className: "text-right",
-              render: (u) =>
-                u.id === me?.id ? null : (
-                  <Button size="sm" variant={u.is_active ? "secondary" : "success"} onClick={() => setTarget(u)}>
-                    {u.is_active ? "Deactivate" : "Activate"}
-                  </Button>
-                ),
+              render: (u) => (
+                <div className="flex flex-wrap justify-end gap-1.5">
+                  <Button size="sm" variant="secondary" onClick={() => setEditing(u)}>Edit</Button>
+                  {u.id !== me?.id && (
+                    <Button size="sm" variant={u.is_active ? "secondary" : "success"} onClick={() => setTarget(u)}>
+                      {u.is_active ? "Deactivate" : "Activate"}
+                    </Button>
+                  )}
+                </div>
+              ),
             },
           ]}
         />
         <Pagination meta={query.data?.pagination} onPageChange={setPage} />
       </Card>
       <CreateUserModal open={creating} onClose={() => setCreating(false)} />
+      <EditUserModal user={editing} onClose={() => setEditing(null)} />
       <ConfirmDialog
         open={Boolean(target)}
         title={target?.is_active ? "Deactivate user?" : "Activate user?"}

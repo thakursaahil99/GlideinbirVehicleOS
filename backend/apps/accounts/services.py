@@ -196,6 +196,31 @@ class UserService:
 
     @staticmethod
     @transaction.atomic
+    def admin_update(*, target, data, actor, request=None):
+        """Super Admin edits name / phone / e-mail and optionally resets the password."""
+        fields = [f for f in ("full_name", "phone", "email") if f in data and data[f] != getattr(target, f)]
+        old = {f: getattr(target, f) for f in fields}
+        for field in fields:
+            setattr(target, field, data[field])
+        password = data.get("password")
+        if password:
+            target.set_password(password)
+            fields.append("password")
+        if fields:
+            target.save(update_fields=[*fields, "updated_at"])
+            if password:
+                AuthService.revoke_all_refresh_tokens(target)
+            if target.is_customer:
+                from apps.customers.services import CustomerService
+
+                CustomerService.sync_from_user(target)
+            AuditService.log(AuditAction.USER_UPDATED, user=actor, organization=get_user_organization(target),
+                             instance=target, request=request, old_data=old,
+                             new_data={**{f: getattr(target, f) for f in old}, **({"password": "changed"} if password else {})})
+        return target
+
+    @staticmethod
+    @transaction.atomic
     def update_profile(*, user, data, request=None):
         fields = [f for f in ("full_name", "phone", "profile_photo") if f in data]
         old = {f: str(getattr(user, f)) for f in fields}

@@ -98,3 +98,36 @@ test("super admin creates an agency, then a user inside it", async ({ page, brow
     await fresh.close();
   }
 });
+
+test("super admin edits an agency and a user", async ({ page }, info) => {
+  test.skip(info.project.name !== "desktop", "changes shared data — run once");
+  const problems = watchForErrors(page);
+  await login(page, USERS.admin);
+  await page.goto("/admin/vendors?search=Speedy");
+  await page.getByRole("button", { name: "Edit", exact: true }).first().click();
+  let dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Website").fill("https://speedy.example.com");
+  await dialog.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByText("Agency updated.")).toBeVisible();
+
+  await page.goto("/admin/users");
+  await page.getByPlaceholder(/Search name/).fill("customer02");
+  const row = page.locator("tr", { hasText: "customer02@" });
+  await row.getByRole("button", { name: "Edit", exact: true }).click();
+  dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Phone").fill("+919800099999");
+  await dialog.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByText("User updated.")).toBeVisible();
+  expect(problems).toEqual([]);
+});
+
+test("agency admin edits a part and a customer", async ({ page }, info) => {
+  test.skip(info.project.name !== "desktop", "changes shared data — run once");
+  await login(page, USERS.agency);
+  await page.goto("/agency/inventory");
+  await page.getByRole("button", { name: "Edit", exact: true }).first().click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Brand").fill("E2E Brand");
+  await dialog.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByText("Part updated.")).toBeVisible();
+});

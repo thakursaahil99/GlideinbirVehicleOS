@@ -122,3 +122,22 @@ class TestAgencyAdminAddsStaffWithPassword:
         res = auth_client(agency_a.admin).post(STAFF, {"email": "mech@example.com", "full_name": "Mechanic",
                                                        "role": "AGENCY_STAFF", "password": "abc"})
         assert res.status_code == 400
+
+
+class TestAdminEditUser:
+    def test_edit_details_and_reset_password(self, auth_client, super_admin, customer, api_client):
+        res = auth_client(super_admin).patch(f"{USERS}{customer.pk}/", {"full_name": "Renamed", "phone": "+919800011122",
+                                                                       "password": "N3w!Passw0rd"})
+        assert res.status_code == 200, res.content
+        customer.refresh_from_db()
+        assert customer.full_name == "Renamed"
+        assert Customer.objects.get(user=customer).full_name == "Renamed"
+        assert login_ok(api_client, customer.email, "N3w!Passw0rd")
+        assert AuditLog.objects.filter(action=AuditAction.USER_UPDATED, user=super_admin).exists()
+
+    def test_duplicate_email_rejected(self, auth_client, super_admin, customer, make_user):
+        other = make_user()
+        assert auth_client(super_admin).patch(f"{USERS}{customer.pk}/", {"email": other.email}).status_code == 400
+
+    def test_agency_admin_cannot_edit_users(self, auth_client, agency_a, customer):
+        assert auth_client(agency_a.admin).patch(f"{USERS}{customer.pk}/", {"full_name": "X"}).status_code == 403

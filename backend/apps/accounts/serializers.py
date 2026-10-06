@@ -65,6 +65,27 @@ class AdminUserSerializer(UserSerializer):
     """Used by Super Admin listings — no extra secrets, just the same shape."""
 
 
+class AdminUserUpdateSerializer(serializers.Serializer):
+    """Super Admin edits an account's details; a new password is optional."""
+
+    email = serializers.EmailField(max_length=254, required=False)
+    full_name = serializers.CharField(max_length=150, required=False)
+    phone = serializers.RegexField(r"^\+?[0-9]{7,15}$", required=False, allow_blank=True, max_length=16)
+    password = serializers.CharField(write_only=True, trim_whitespace=False, max_length=128, required=False,
+                                     allow_blank=True)
+
+    def validate_email(self, value):
+        value = value.strip().lower()
+        if User.objects.filter(email__iexact=value).exclude(pk=self.instance.pk).exists():
+            raise serializers.ValidationError("An account with this e-mail already exists.")
+        return value
+
+    def validate_password(self, value):
+        if value:
+            validate_new_password(value, self.instance)
+        return value
+
+
 class AdminUserCreateSerializer(serializers.Serializer):
     """Super Admin creates any account; agency roles need the agency they belong to."""
 

@@ -180,6 +180,15 @@ class UserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.Gen
         return Response(self.get_serializer(self.get_queryset().get(pk=user.pk)).data,
                         status=status.HTTP_201_CREATED)
 
+    @extend_schema(tags=["users"], summary="Edit a user's details / reset password (Super Admin)",
+                   request=s.AdminUserUpdateSerializer, responses={200: s.AdminUserSerializer})
+    def partial_update(self, request, pk=None):
+        target = self.get_object()
+        serializer = s.AdminUserUpdateSerializer(target, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        UserService.admin_update(target=target, data=serializer.validated_data, actor=request.user, request=request)
+        return Response(self.get_serializer(self.get_queryset().get(pk=target.pk)).data)
+
     @extend_schema(tags=["users"], summary="Activate a user", request=None, responses={200: s.AdminUserSerializer})
     @action(detail=True, methods=["post"])
     def activate(self, request, pk=None):

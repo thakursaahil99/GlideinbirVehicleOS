@@ -44,6 +44,7 @@ export const organizationsApi = {
 export const usersApi = {
   list: (params: Params = {}) => apiGetPage<User>("/users/", cleanParams(params)),
   create: (input: UserCreateInput) => apiPost<User>("/users/", input),
+  update: (id: string, input: Record<string, string>) => apiPatch<User>(`/users/${id}/`, input),
   activate: (id: string) => apiPost<User>(`/users/${id}/activate/`),
   deactivate: (id: string) => apiPost<User>(`/users/${id}/deactivate/`),
 };
