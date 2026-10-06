@@ -1,7 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from .models import Vehicle, VehicleDocument, VehicleType, normalize_registration
+from .models import Vehicle, VehicleDocument, VehicleModel, VehicleSale, VehicleType, normalize_registration
 
 
 class VehicleSerializer(serializers.ModelSerializer):
@@ -57,3 +57,63 @@ class VehicleDocumentSerializer(serializers.ModelSerializer):
         model = VehicleDocument
         fields = ("id", "kind", "title", "file", "uploaded_by", "created_at")
         read_only_fields = ("id", "uploaded_by", "created_at")
+
+
+class VehicleModelSerializer(serializers.ModelSerializer):
+    is_low_stock = serializers.BooleanField(read_only=True)
+    vehicle_type_display = serializers.CharField(source="get_vehicle_type_display", read_only=True)
+
+    class Meta:
+        model = VehicleModel
+        fields = ("id", "vehicle_type", "vehicle_type_display", "brand", "name", "variant", "launch_year",
+                  "fuel_type", "engine_cc", "colours", "ex_showroom_price", "stock_quantity", "minimum_stock",
+                  "is_low_stock", "is_active", "notes", "created_at", "updated_at")
+        read_only_fields = ("id", "is_low_stock", "vehicle_type_display", "created_at", "updated_at")
+        # Uniqueness per agency is enforced by the DB constraint; organization is stamped server-side.
+        validators = []
+
+    def validate_launch_year(self, value):
+        if value is not None and not 1950 <= value <= 2100:
+            raise serializers.ValidationError("Enter a valid year.")
+        return value
+
+
+class StockAdjustSerializer(serializers.Serializer):
+    quantity = serializers.IntegerField(help_text="Positive = units received, negative = units sold/out")
+    note = serializers.CharField(max_length=300, required=False, allow_blank=True, default="")
+
+    def validate_quantity(self, value):
+        if value == 0:
+            raise serializers.ValidationError("Quantity cannot be zero.")
+        return value
+
+
+class VehicleSaleSerializer(serializers.ModelSerializer):
+    vehicle_model_name = serializers.SerializerMethodField()
+    sold_by_name = serializers.CharField(source="sold_by.full_name", read_only=True, default=None)
+    buyer_phone = serializers.RegexField(r"^\+?[0-9]{7,15}$", max_length=16)
+
+    class Meta:
+        model = VehicleSale
+        fields = ("id", "vehicle_model", "vehicle_model_name", "customer", "buyer_name", "buyer_phone", "buyer_email",
+                  "buyer_address", "colour", "chassis_number", "engine_number", "registration_number", "sale_price",
+                  "payment_mode", "invoice_number", "sold_on", "sold_by", "sold_by_name", "notes",
+                  "created_at", "updated_at")
+        read_only_fields = ("id", "vehicle_model_name", "sold_by", "sold_by_name", "created_at", "updated_at")
+
+    def get_vehicle_model_name(self, obj) -> str:
+        return str(obj.vehicle_model)
+
+    def validate(self, attrs):
+        # Foreign keys must belong to the caller's agency (tenant isolation).
+        org_id = self.context.get("organization_id")
+        vm = attrs.get("vehicle_model")
+        if vm is not None and vm.organization_id != org_id:
+            raise serializers.ValidationError({"vehicle_model": ["Vehicle model not found."]})
+        customer = attrs.get("customer")
+        if customer is not None:
+            from apps.customers.models import Customer
+
+            if not Customer.objects.for_user(self.context["request"].user).filter(pk=customer.pk).exists():
+                raise serializers.ValidationError({"customer": ["Customer not found."]})
+        return attrs

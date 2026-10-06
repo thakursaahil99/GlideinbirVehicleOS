@@ -13,6 +13,7 @@ import { AgencyServicesPage } from "@/pages/agency/AgencyServicesPage";
 import { AgencySettingsPage } from "@/pages/agency/AgencySettingsPage";
 import { AgencyStaffPage } from "@/pages/agency/AgencyStaffPage";
 import { InventoryPage } from "@/pages/agency/InventoryPage";
+import { ShowroomPage } from "@/pages/agency/ShowroomPage";
 import { ForgotPasswordPage } from "@/pages/auth/ForgotPasswordPage";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { RegisterAgencyPage } from "@/pages/auth/RegisterAgencyPage";
@@ -85,6 +86,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: later(<AdminDashboard />) },
       { path: "vendors", element: <AdminAgenciesPage /> },
+      { path: "inventory", element: <InventoryPage /> },
       { path: "services", element: <AdminServicesPage /> },
       { path: "customers", element: <CustomersListPage basePath="/admin/customers" /> },
       { path: "customers/:id", element: <CustomerDetailPage backTo="/admin/customers"><CustomerInsights bookingsBase="/admin/bookings" /></CustomerDetailPage> },
@@ -107,6 +109,7 @@ export const router = createBrowserRouter([
       { path: "customers/:id", element: <CustomerDetailPage backTo="/agency/customers"><CustomerInsights bookingsBase="/agency/bookings" /></CustomerDetailPage> },
       { path: "vehicles", element: <VehiclesListPage /> },
       { path: "inventory", element: <InventoryPage /> },
+      { path: "showroom", element: <ShowroomPage /> },
       { path: "payments", element: <PaymentsPage /> },
       { path: "reports", element: later(<ReportsPage />) },
       { path: "services", element: <AgencyServicesPage /> },

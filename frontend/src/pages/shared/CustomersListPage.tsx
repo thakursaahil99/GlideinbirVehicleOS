@@ -7,6 +7,7 @@ import { customersApi } from "@/api/customers";
 import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/Button";
 import { Card, PageHeader } from "@/components/ui/Card";
+import { ImportButton } from "@/components/ui/ImportButton";
 import { DataTable, Pagination } from "@/components/ui/DataTable";
 import { Input, Textarea } from "@/components/ui/FormField";
 import { Modal } from "@/components/ui/Modal";
@@ -64,7 +65,7 @@ export function CustomersListPage({ basePath }: { basePath: string }) {
     <>
       <PageHeader title="Customers"
         description={user?.role === "SUPER_ADMIN" ? "Every customer on the platform." : "Customers who booked with you or were added by your team."}
-        actions={canCreate && <Button onClick={() => setAdding(true)}><UserPlus className="h-4 w-4" /> Add walk-in</Button>} />
+        actions={canCreate && <div className="flex flex-wrap gap-2"><ImportButton resource="customers" invalidate={[["customers"]]} /><Button onClick={() => setAdding(true)}><UserPlus className="h-4 w-4" /> Add walk-in</Button></div>} />
       <Card>
         <div className="mb-4"><SearchBar value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Name, phone, e-mail, registration no…" /></div>
         <DataTable<Customer>

@@ -136,11 +136,32 @@ export interface JobCard {
   created_at: string;
 }
 
+export interface PartFitment {
+  id?: string;
+  vehicle_type: string;
+  brand: string;
+  model: string;
+  year_from: number | null;
+  year_to: number | null;
+}
+
 export interface Part {
   id: string;
+  organization: string;
+  organization_name: string;
   name: string;
   sku: string;
   brand: string;
+  category: string | null;
+  category_name: string | null;
+  preferred_supplier: string | null;
+  preferred_supplier_name: string | null;
+  hsn_code: string;
+  rack_location: string;
+  description: string;
+  universal: boolean;
+  fitments: PartFitment[];
+  stock_status: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
   purchase_price: string;
   selling_price: string;
   tax_rate: string;
@@ -158,11 +179,53 @@ export interface StockTransaction {
   quantity: string;
   unit_price: string;
   balance_after: string;
+  supplier_name?: string | null;
   job_card_number: string | null;
   reference: string;
   note: string;
   created_by_name: string | null;
   created_at: string;
+}
+
+export interface PartCategory {
+  id: string;
+  name: string;
+  description: string;
+  parts_count: number;
+}
+
+export interface Supplier {
+  id: string;
+  name: string;
+  contact_person: string;
+  phone: string;
+  email: string;
+  gst_number: string;
+  address: string;
+  notes: string;
+  active: boolean;
+  parts_count: number;
+  purchase_count: number;
+  purchase_total: string;
+  last_purchase_at: string | null;
+}
+
+export interface FitmentOption {
+  vehicle_type: string;
+  brand: string;
+  model: string;
+  parts: number;
+}
+
+export interface InventorySummary {
+  parts: number;
+  stock_value_cost: string;
+  stock_value_retail: string;
+  low_stock: number;
+  out_of_stock: number;
+  by_category: { category: string; parts: number; value: string }[];
+  dead_stock_days: number;
+  dead_stock: { id: string; name: string; sku: string; stock_quantity: string; unit: string; value: string; last_out_at: string | null }[];
 }
 
 export interface InvoiceItem {

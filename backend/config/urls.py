@@ -10,7 +10,8 @@ from apps.accounts.views import UserViewSet
 from apps.audit_logs.views import AuditLogViewSet
 from apps.availability.views import DaysView, SlotsView
 from apps.bookings.views import BookingViewSet
-from apps.inventory.views import PartViewSet
+from apps.core.importing import ImportTemplateView, ImportTypesView, ImportView
+from apps.inventory.views import PartCategoryViewSet, PartViewSet, SupplierViewSet
 from apps.invoices.views import InvoiceViewSet
 from apps.job_cards.views import JobCardViewSet
 from apps.notifications.views import NotificationViewSet
@@ -21,6 +22,7 @@ from apps.customers.views import CustomerViewSet
 from apps.organizations.views import OrganizationViewSet
 from apps.vendors.urls import agency_urlpatterns
 from apps.services.views import ServiceViewSet, VendorServiceViewSet
+from apps.vehicles.catalog_views import VehicleModelViewSet, VehicleSaleViewSet
 from apps.vehicles.views import VehicleViewSet
 from apps.vendors.views import VendorDirectoryViewSet
 
@@ -31,11 +33,15 @@ router.register("audit-logs", AuditLogViewSet, basename="audit-log")
 router.register("vendors", VendorDirectoryViewSet, basename="vendor")
 router.register("customers", CustomerViewSet, basename="customer")
 router.register("vehicles", VehicleViewSet, basename="vehicle")
+router.register("showroom/models", VehicleModelViewSet, basename="vehicle-model")
+router.register("showroom/sales", VehicleSaleViewSet, basename="vehicle-sale")
 router.register("services", ServiceViewSet, basename="service")
 router.register("vendor-services", VendorServiceViewSet, basename="vendor-service")
 router.register("bookings", BookingViewSet, basename="booking")
 router.register("job-cards", JobCardViewSet, basename="job-card")
 router.register("inventory/parts", PartViewSet, basename="part")
+router.register("inventory/categories", PartCategoryViewSet, basename="part-category")
+router.register("inventory/suppliers", SupplierViewSet, basename="supplier")
 router.register("payments", PaymentViewSet, basename="payment")
 router.register("invoices", InvoiceViewSet, basename="invoice")
 router.register("notifications", NotificationViewSet, basename="notification")
@@ -51,6 +57,9 @@ api_v1 = [
     path("reports/dashboard/", DashboardView.as_view(), name="dashboard"),
     path("reports/<slug:name>/", ReportView.as_view(), name="report-detail"),
     path("search/", SearchView.as_view(), name="global-search"),
+    path("imports/", ImportTypesView.as_view(), name="import-types"),
+    path("imports/<slug:resource>/template/", ImportTemplateView.as_view(), name="import-template"),
+    path("imports/<slug:resource>/", ImportView.as_view(), name="import-run"),
     *router.urls,
 ]
 

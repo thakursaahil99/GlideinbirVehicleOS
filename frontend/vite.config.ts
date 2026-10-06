@@ -32,6 +32,8 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // Playwright writes these while tests run; watching them crashes Vite on Windows (EBUSY file locks).
+    watch: { ignored: ["**/e2e-report/**", "**/test-results/**", "**/playwright-report/**"] },
     proxy: {
       "/api": { target: proxyTarget, changeOrigin: true },
       "/media": { target: proxyTarget, changeOrigin: true },

@@ -12,7 +12,7 @@ const tones: Record<Tone, { badge: string; dot: string }> = {
 };
 
 const statusTone: Record<string, Tone> = {
-  ACTIVE: "green", VERIFIED: "green", APPROVED: "green", COMPLETED: "green", DELIVERED: "green", PAID: "green", SUCCESS: "green", SUCCEEDED: "green", READY: "green",
+  ACTIVE: "green", VERIFIED: "green", APPROVED: "green", COMPLETED: "green", DELIVERED: "green", PAID: "green", SUCCESS: "green", SUCCEEDED: "green", READY: "green", IN_STOCK: "green",
   PENDING: "amber", AWAITING_APPROVAL: "amber", WAITING_APPROVAL: "amber", WAITING_FOR_APPROVAL: "amber", PARTIALLY_PAID: "amber", UNPAID: "amber", DUE: "amber", ON_HOLD: "amber", LOW_STOCK: "amber",
   INACTIVE: "slate", UNVERIFIED: "slate", DRAFT: "slate", CLOSED: "slate", EXPIRED: "slate",
   SUSPENDED: "rose", REJECTED: "rose", CANCELLED: "rose", FAILED: "rose", OVERDUE: "rose", NO_SHOW: "rose", OUT_OF_STOCK: "rose", VOID: "rose",

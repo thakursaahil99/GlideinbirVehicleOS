@@ -1,5 +1,5 @@
 import {
-  BarChart3, Bell, Building2, CalendarDays, CalendarPlus, Car, ClipboardList, Contact, CreditCard, FileClock, FileText,
+  BarChart3, Bell, Bike, Building2, CalendarDays, CalendarPlus, Car, ClipboardList, Contact, CreditCard, FileClock, FileText,
   Gauge, Package, Search, Settings, Ticket, UserCircle, Users, Wrench, type LucideIcon,
 } from "lucide-react";
 
@@ -26,6 +26,7 @@ export const NAVIGATION: Record<"admin" | "agency" | "customer", NavItem[]> = {
     { to: "/admin/services", label: "Service catalog", icon: Wrench },
     { to: "/admin/customers", label: "Customers", icon: Contact },
     { to: "/admin/vehicles", label: "Vehicles", icon: Car },
+    { to: "/admin/inventory", label: "Spare parts", icon: Package },
     { to: "/admin/invoices", label: "Invoices", icon: FileText },
     { to: "/admin/payments", label: "Payments", icon: CreditCard },
     { to: "/admin/users", label: "Users", icon: Users },
@@ -41,7 +42,8 @@ export const NAVIGATION: Record<"admin" | "agency" | "customer", NavItem[]> = {
     { to: "/agency/job-cards", label: "Job cards", icon: ClipboardList, permission: "JOB_CARD_VIEW" },
     { to: "/agency/customers", label: "Customers", icon: Contact, permission: "CUSTOMER_VIEW" },
     { to: "/agency/vehicles", label: "Vehicles", icon: Car, permission: "VEHICLE_VIEW" },
-    { to: "/agency/inventory", label: "Inventory", icon: Package },
+    { to: "/agency/inventory", label: "Spare parts", icon: Package },
+    { to: "/agency/showroom", label: "Showroom", icon: Bike },
     { to: "/agency/invoices", label: "Invoices", icon: FileText, permission: "INVOICE_VIEW" },
     { to: "/agency/payments", label: "Payments", icon: CreditCard, permission: "PAYMENT_VIEW" },
     { to: "/agency/reports", label: "Reports", icon: BarChart3, permission: "REPORT_VIEW" },

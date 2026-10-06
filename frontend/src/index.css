@@ -162,3 +162,8 @@ h1, h2, h3 {
   15%, 45% { transform: rotate(14deg); }
   30% { transform: rotate(-8deg); }
 }
+
+@keyframes grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}

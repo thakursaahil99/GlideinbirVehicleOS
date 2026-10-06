@@ -1,9 +1,10 @@
 import type {
   AdditionalWork, AppNotification, Booking, BookingHistory, CalendarEvent, Dashboard, DaysResponse, Invoice, JobCard,
-  JobCardPart, Part, Payment, ReportResult, SearchResults, SlotsResponse, StockTransaction, TimelineEvent,
+  FitmentOption, InventorySummary, JobCardPart, Part, PartCategory, Payment, ReportResult, SearchResults, SlotsResponse,
+  StockTransaction, Supplier, TimelineEvent,
 } from "@/types/operations";
 
-import { api, apiGet, apiGetPage, apiPatch, apiPost, apiPut, cleanParams } from "./client";
+import { api, apiDelete, apiGet, apiGetPage, apiPatch, apiPost, apiPut, cleanParams } from "./client";
 
 type Params = Record<string, unknown>;
 
@@ -64,9 +65,20 @@ export const inventoryApi = {
   list: (params: Params = {}) => apiGetPage<Part>("/inventory/parts/", cleanParams(params)),
   create: (input: Partial<Part>) => apiPost<Part>("/inventory/parts/", input),
   update: (id: string, input: Partial<Part>) => apiPatch<Part>(`/inventory/parts/${id}/`, input),
-  move: (id: string, input: { transaction_type: string; quantity: string; unit_price?: string; reference?: string; note?: string }) =>
+  move: (id: string, input: { transaction_type: string; quantity: string; unit_price?: string; supplier?: string | null; reference?: string; note?: string }) =>
     apiPost<StockTransaction>(`/inventory/parts/${id}/move/`, input),
   transactions: (id: string) => apiGetPage<StockTransaction>(`/inventory/parts/${id}/transactions/`),
+  compatible: (params: Params) => apiGetPage<Part>("/inventory/parts/compatible/", cleanParams(params)),
+  fitmentOptions: () => apiGet<FitmentOption[]>("/inventory/parts/fitment-options/"),
+  summary: () => apiGet<InventorySummary>("/inventory/parts/summary/"),
+  categories: (organization = "") => apiGet<PartCategory[]>("/inventory/categories/", cleanParams({ organization })),
+  createCategory: (input: Partial<PartCategory>) => apiPost<PartCategory>("/inventory/categories/", input),
+  updateCategory: (id: string, input: Partial<PartCategory>) => apiPatch<PartCategory>(`/inventory/categories/${id}/`, input),
+  deleteCategory: (id: string) => apiDelete(`/inventory/categories/${id}/`),
+  suppliers: (params: Params = {}) => apiGetPage<Supplier>("/inventory/suppliers/", cleanParams({ page_size: 100, ...params })),
+  createSupplier: (input: Partial<Supplier>) => apiPost<Supplier>("/inventory/suppliers/", input),
+  updateSupplier: (id: string, input: Partial<Supplier>) => apiPatch<Supplier>(`/inventory/suppliers/${id}/`, input),
+  deleteSupplier: (id: string) => apiDelete(`/inventory/suppliers/${id}/`),
 };
 
 export const invoicesApi = {
